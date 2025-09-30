@@ -1,6 +1,7 @@
 import NavBar from "@/components/Navbar";
 import "./globals.css";
 import { Providers } from "@/store";
+import OnlineNow from "@/components/OnlineNow";
 export const metadata = { title: "Labfry Auth" };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
@@ -8,6 +9,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" suppressHydrationWarning>
       <body className="min-h-screen bg-white text-zinc-900 antialiased">
         <NavBar/>
+        <OnlineNow/>
         <Providers>{children}</Providers>
       </body>
     </html>

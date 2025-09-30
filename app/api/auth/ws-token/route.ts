@@ -4,18 +4,16 @@ import { dbConnect } from "@/lib/mongo";
 import { User } from "@/models/User";
 import jwt from "jsonwebtoken";
 import { signWsToken } from "@/lib/jwt";
+import { cookies } from "next/headers";
 
-export async function GET(req: Request) {
+export async function GET() {
   await dbConnect(process.env.MONGODB_URI!);
 
-  const cookieHeader = req.headers.get("cookie") || "";
-  const accessToken = cookieHeader
-    .split("; ")
-    .find((c) => c.startsWith("accessToken="))
-    ?.split("=")[1];
-
-  if (!accessToken)
+  const store = await cookies();
+  const accessToken = store.get("accessToken")?.value;
+  if (!accessToken) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
 
   try {
     const payload = jwt.verify(accessToken, process.env.JWT_SECRET!) as {
@@ -25,6 +23,7 @@ export async function GET(req: Request) {
       verified: boolean;
     };
 
+    // ensure user still exists
     const u = await User.findById(payload.uid).lean();
     if (!u) return NextResponse.json({ error: "Not found" }, { status: 404 });
 

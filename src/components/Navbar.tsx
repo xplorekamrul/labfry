@@ -40,6 +40,9 @@ export default async function NavBar() {
           <Link href="/" className="text-zinc-700 hover:text-zinc-900">
             Home
           </Link>
+          <Link href="/admin" className="text-zinc-700 hover:text-zinc-900">
+            socket Demo
+          </Link>
 
           {hasToken ? (
             <>

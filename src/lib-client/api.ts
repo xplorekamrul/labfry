@@ -1,10 +1,19 @@
-export async function api(path: string, init?: RequestInit) {
+export async function api(path: string, init: RequestInit = {}) {
   const res = await fetch(path, {
-    ...init,
-    credentials: "include",
-    headers: { "Content-Type": "application/json", ...(init?.headers||{}) },
+    method: init.method ?? "GET",
+    headers: {
+      "Content-Type": "application/json",
+      ...(init.headers || {}),
+    },
+    body: init.body as BodyInit | null | undefined,
+    credentials: "include",              
+    cache: "no-store",
   });
-  const body = await res.json().catch(()=> ({}));
-  if (!res.ok) throw new Error(body.error || `HTTP ${res.status}`);
-  return body;
+  if (!res.ok) {
+    let msg = "Request failed";
+    try { const data = await res.json(); msg = data.error || msg; } catch {}
+    throw new Error(msg);
+  }
+  if (res.status === 204) return null;
+  return res.json();
 }
