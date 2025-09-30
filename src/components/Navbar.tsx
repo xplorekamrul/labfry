@@ -1,17 +1,15 @@
-// components/NavBar.tsx
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
 
-// Always render dynamically (no caching)
 export const dynamic = "force-dynamic";
 
 type JwtRole = "ADMIN" | "CUSTOMER" | "PROVIDER";
 type JwtPayload = { uid: string; role: JwtRole; email: string; verified: boolean };
 
 export default async function NavBar() {
-  const cookieStore = await cookies(); // Next 15+: cookies() can be async
+  const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;
 
   let hasToken = false;
