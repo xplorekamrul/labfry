@@ -1,4 +1,3 @@
-import Image from "next/image";
 import React from "react";
 
 export default function AuthCard({ title, subtitle, children }: { title?: string; subtitle?: string; children: React.ReactNode }) {

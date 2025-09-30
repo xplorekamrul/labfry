@@ -8,7 +8,6 @@ import { cookies } from "next/headers";
 export async function GET() {
   await dbConnect(process.env.MONGODB_URI!);
 
-  // ⬇️ FIX: await cookies()
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("accessToken")?.value;
   if (!accessToken) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });

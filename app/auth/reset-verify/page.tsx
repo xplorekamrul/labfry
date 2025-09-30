@@ -19,7 +19,6 @@ export default function ResetVerifyPage() {
         method: "POST",
         body: JSON.stringify({ email, code }),
       });
-      // On success, we get a one-time reset token
       router.push(`/auth/reset?token=${encodeURIComponent(res.token)}`);
     } catch (e: any) {
       alert(e.message);

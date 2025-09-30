@@ -1,4 +1,3 @@
-// models/User.ts
 import { Schema, model, models, Model, Types } from "mongoose";
 
 export type Role = "ADMIN" | "CUSTOMER" | "PROVIDER";

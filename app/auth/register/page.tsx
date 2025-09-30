@@ -1,9 +1,7 @@
-// app/(auth)/register/page.tsx
 "use client";
 import { useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthCard, { BrandButton, TextInput } from "@/components/AuthCard";
-import Link from "next/link";
 import { api } from "@/lib-client/api";
 
 const VALID_ROLES = ["CUSTOMER", "PROVIDER"] as const;
@@ -40,7 +38,7 @@ export default function RegisterPage() {
       await api("/api/auth/register", {
         method: "POST",
         body: JSON.stringify({
-          role, // <-- send CUSTOMER or PROVIDER
+          role, 
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
@@ -48,7 +46,6 @@ export default function RegisterPage() {
           agree: form.agree,
         }),
       });
-      // After registration, user goes to Verify page
       router.push(`/auth/verify?email=${encodeURIComponent(form.email)}`);
     } catch (e: any) {
       alert(e.message);

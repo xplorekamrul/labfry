@@ -6,7 +6,6 @@ export default function RoleSelect() {
   const router = useRouter();
 
   const choose = (role: "CUSTOMER" | "PROVIDER") => {
-    // Go to register and prefill role as a query param
     router.push(`/auth/register?role=${role}`);
   };
 

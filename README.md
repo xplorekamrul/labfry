@@ -1,12 +1,15 @@
 ```md
 # Labfry Auth (Next.js + Socket.IO)
 
+# For Admin Registration & Login  Use The same email that have in .Env File
+
 Simple auth app matching Figma:
 - Register → Email OTP (6-digit)
 - Login (JWT in HttpOnly cookie)
 - Forgot/Reset Password (email link)
 - Role Select (Customer / Service Provider)
 - Profile with presence toggle (via external Socket.IO server)
+
 
 ## Project Layout
 
@@ -26,6 +29,9 @@ Create **`.env.local`** in the project root (Next.js):
 
 MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
 JWT_SECRET=supersecret_min_32_chars
+
+ADMIN_EMAIL="YourAdmin@gmail.com"
+
 
 SMTP_HOST=smtp.gmail.com
 SMTP_PORT=587

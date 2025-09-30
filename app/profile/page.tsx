@@ -14,7 +14,7 @@ export default function ProfilePage() {
   const online = useSelector((s:RootState)=>s.presence.online);
   const dispatch = useDispatch();
 
-  useEffect(()=>{ // hydrate user
+  useEffect(()=>{ 
     api("/api/me").then(u=>{
       dispatch(setUser({ id:u.id, firstName:u.firstName, lastName:u.lastName, email:u.email, role:u.role, emailVerified:u.emailVerified }));
       dispatch(setOnline(!!u.isOnline));
