@@ -7,34 +7,82 @@ import { useDispatch } from "react-redux";
 import { setUser, setWsToken } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 
+// Infer the payload type that setUser expects (e.g., User | null)
+type SetUserPayload = Parameters<typeof setUser>[0];
+
+type LoginForm = { email: string; password: string; remember: boolean };
+type LoginResp = { user: SetUserPayload; wsToken: string };
+
+// small helper to show readable errors without using `any`
+function getErrMsg(e: unknown): string {
+  if (e instanceof Error) return e.message;
+  if (e && typeof e === "object" && "message" in e) {
+    const msg = (e as { message?: unknown }).message;
+    if (typeof msg === "string") return msg;
+  }
+  try {
+    return JSON.stringify(e);
+  } catch {
+    return String(e);
+  }
+}
+
 export default function LoginPage() {
-  const [form, set] = useState({ email:"", password:"", remember:true });
-  const [loading, setLoading] = useState(false);
+  const [form, set] = useState<LoginForm>({ email: "", password: "", remember: true });
+  const [loading, setLoading] = useState<boolean>(false);
   const dispatch = useDispatch();
   const router = useRouter();
 
   async function submit() {
     setLoading(true);
     try {
-      const data = await api("/api/auth/login", { method:"POST", body: JSON.stringify(form) });
+      // If your `api` supports generics, you can do: await api<LoginResp>(...)
+      const data = (await api("/api/auth/login", {
+        method: "POST",
+        body: JSON.stringify(form),
+      })) as LoginResp;
+
       dispatch(setUser(data.user));
       dispatch(setWsToken(data.wsToken));
       router.push("/profile");
-    } catch (e:any) { alert(e.message); } finally { setLoading(false); }
+    } catch (e: unknown) {
+      alert(getErrMsg(e));
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
     <AuthCard title="Welcome to Labfry" subtitle="Please share your login details so you can access the website.">
       <div className="space-y-4">
-        <TextInput placeholder="Email address" type="email" value={form.email} onChange={e=>set({...form, email:e.target.value})}/>
-        <TextInput placeholder="Password" type="password" value={form.password} onChange={e=>set({...form, password:e.target.value})}/>
+        <TextInput
+          placeholder="Email address"
+          type="email"
+          value={form.email}
+          onChange={(e) => set({ ...form, email: e.target.value })}
+        />
+        <TextInput
+          placeholder="Password"
+          type="password"
+          value={form.password}
+          onChange={(e) => set({ ...form, password: e.target.value })}
+        />
         <div className="flex items-center justify-between">
           <label className="flex items-center gap-2 text-sm">
-            <input type="checkbox" checked={form.remember} onChange={e=>set({...form, remember:e.target.checked})}/> Remember me
+            <input
+              type="checkbox"
+              checked={form.remember}
+              onChange={(e) => set({ ...form, remember: e.target.checked })}
+            />{" "}
+            Remember me
           </label>
-          <Link href="/auth/forgot" className="text-brand-red text-sm">Forgot password?</Link>
+          <Link href="/auth/forgot" className="text-brand-red text-sm">
+            Forgot password?
+          </Link>
         </div>
-        <BrandButton onClick={submit} disabled={loading}>{loading ? "Logging in..." : "Login"}</BrandButton>
+        <BrandButton onClick={submit} disabled={loading}>
+          {loading ? "Logging in..." : "Login"}
+        </BrandButton>
         <div className="relative my-6 text-sm text-zinc-500">
           <div className="flex items-center gap-3">
             <div className="h-px bg-zinc-200 flex-1"></div>
@@ -42,7 +90,10 @@ export default function LoginPage() {
             <div className="h-px bg-zinc-200 flex-1"></div>
           </div>
           <div className="text-center mt-6">
-            Don’t have an account? <Link href="/auth/register" className="text-brand-red font-medium">Get started</Link>
+            Don’t have an account?{" "}
+            <Link href="/auth/register" className="text-brand-red font-medium">
+              Get started
+            </Link>
           </div>
         </div>
       </div>

@@ -3,13 +3,31 @@ import { useEffect, useState } from "react";
 import { api } from "@/lib-client/api";
 import { getSocket } from "@/lib-client/socket";
 
+type Role = "ADMIN" | "CUSTOMER" | "PROVIDER";
+
+type PresenceEvt = {
+  userId: string;
+  email: string;
+  online: boolean;
+  at: number;
+};
+
+type ShoutEvt = {
+  from: { id: string; email: string; role: string };
+  text: string;
+  at: number;
+};
+
 type FeedItem =
-  | { t: "presence"; userId: string; email: string; online: boolean; at: number }
-  | { t: "shout"; from: { id: string; email: string; role: string }; text: string; at: number };
+  | ({ t: "presence" } & PresenceEvt)
+  | ({ t: "shout" } & ShoutEvt);
+
+type ApiMe = { role: Role };
+type WsTokenResp = { wsToken: string };
 
 export default function AdminMonitor() {
   const [wsToken, setWsToken] = useState<string | null>(null);
-  const [role, setRole] = useState<"ADMIN" | "CUSTOMER" | "PROVIDER" | null>(null);
+  const [role, setRole] = useState<Role | null>(null);
   const [feed, setFeed] = useState<FeedItem[]>([]);
   const [onlineCount, setOnlineCount] = useState<number | null>(null);
   const [status, setStatus] = useState<"idle" | "connecting" | "ready" | "error">("connecting");
@@ -17,10 +35,11 @@ export default function AdminMonitor() {
   // get role & ws token
   useEffect(() => {
     api("/api/me")
-      .then((u) => setRole(u.role))
+      .then((u: ApiMe) => setRole(u.role))
       .catch(() => setRole(null));
+
     api("/api/auth/ws-token")
-      .then(({ wsToken }) => setWsToken(wsToken))
+      .then(({ wsToken }: WsTokenResp) => setWsToken(wsToken))
       .catch(() => setWsToken(null));
   }, []);
 
@@ -29,15 +48,24 @@ export default function AdminMonitor() {
     if (!wsToken) return;
     const s = getSocket(wsToken);
 
-    const onPresence = (p: any) =>
-      setFeed((f) => [{ t: "presence", ...p }, ...f].slice(0, 50));
-    const onShout = (m: any) =>
-      setFeed((f) => [{ t: "shout", ...m }, ...f].slice(0, 50));
+    const onPresence = (p: PresenceEvt) =>
+      setFeed((f) => {
+        const item: FeedItem = { t: "presence", ...p }; // keep 't' literal
+        return [item, ...f].slice(0, 50);
+      });
+
+    const onShout = (m: ShoutEvt) =>
+      setFeed((f) => {
+        const item: FeedItem = { t: "shout", ...m }; // keep 't' literal
+        return [item, ...f].slice(0, 50);
+      });
+
     const onCount = (n: number) => setOnlineCount(n);
 
     const onConnect = () => setStatus("ready");
-    const onError = (err: any) => {
-      console.error("Socket connect_error:", err?.message || err);
+    const onError = (err: unknown) => {
+      const msg = err instanceof Error ? err.message : "Unknown error";
+      console.error("Socket connect_error:", msg);
       setStatus("error");
     };
 
@@ -83,9 +111,7 @@ export default function AdminMonitor() {
         </div>
       </div>
 
-      <div className="mt-2 text-xs text-zinc-500">
-        Status: {status}
-      </div>
+      <div className="mt-2 text-xs text-zinc-500">Status: {status}</div>
 
       <ul className="space-y-3 mt-6">
         {feed.map((item, i) =>

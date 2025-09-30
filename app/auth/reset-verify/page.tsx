@@ -1,15 +1,18 @@
 "use client";
+import { Suspense, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
-import { useState } from "react";
 import AuthCard, { BrandButton } from "@/components/AuthCard";
 import { api } from "@/lib-client/api";
 import Otp from "@/components/otp";
+import { getErrMsg } from "@/lib/get-err-msg";
 
-export default function ResetVerifyPage() {
+type VerifyResp = { token: string };
+
+function ResetVerifyForm() {
   const params = useSearchParams();
   const email = params.get("email") || "";
-  const [code, setCode] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
   async function submit() {
@@ -18,10 +21,10 @@ export default function ResetVerifyPage() {
       const res = await api("/api/password/verify-otp", {
         method: "POST",
         body: JSON.stringify({ email, code }),
-      });
+      }) as VerifyResp;
       router.push(`/auth/reset?token=${encodeURIComponent(res.token)}`);
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      alert(getErrMsg(e));
     } finally {
       setLoading(false);
     }
@@ -36,5 +39,13 @@ export default function ResetVerifyPage() {
         </BrandButton>
       </div>
     </AuthCard>
+  );
+}
+
+export default function ResetVerifyPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <ResetVerifyForm />
+    </Suspense>
   );
 }

@@ -1,18 +1,20 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { Suspense, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import AuthCard, { BrandButton, TextInput } from "@/components/AuthCard";
 import { api } from "@/lib-client/api";
+import { getErrMsg } from "@/lib/get-err-msg";
 
 const VALID_ROLES = ["CUSTOMER", "PROVIDER"] as const;
 type ChosenRole = (typeof VALID_ROLES)[number];
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const params = useSearchParams();
-  const roleParam = (params.get("role") || "").toUpperCase() as ChosenRole | "";
+  const roleParam = (params.get("role") || "").toUpperCase();
+
   const role = useMemo<ChosenRole | null>(
-    () => (VALID_ROLES.includes(roleParam as any) ? (roleParam as ChosenRole) : null),
+    () => (VALID_ROLES.find((r) => r === roleParam) ?? null),
     [roleParam]
   );
 
@@ -28,7 +30,7 @@ export default function RegisterPage() {
     confirm: "",
     agree: false,
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   async function submit() {
     if (!role) return;
@@ -38,7 +40,7 @@ export default function RegisterPage() {
       await api("/api/auth/register", {
         method: "POST",
         body: JSON.stringify({
-          role, 
+          role,
           firstName: form.firstName,
           lastName: form.lastName,
           email: form.email,
@@ -47,8 +49,8 @@ export default function RegisterPage() {
         }),
       });
       router.push(`/auth/verify?email=${encodeURIComponent(form.email)}`);
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      alert(getErrMsg(e));
     } finally {
       setLoading(false);
     }
@@ -93,5 +95,13 @@ export default function RegisterPage() {
         </div>
       </div>
     </AuthCard>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={<div>Loading...</div>}>
+      <RegisterForm />
+    </Suspense>
   );
 }

@@ -3,10 +3,11 @@ import { useState } from "react";
 import AuthCard, { BrandButton, TextInput } from "@/components/AuthCard";
 import { api } from "@/lib-client/api";
 import { useRouter } from "next/navigation";
+import { getErrMsg } from "@/lib/get-err-msg";
 
 export default function ForgotPage() {
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [email, setEmail] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
   const router = useRouter();
 
   async function submit() {
@@ -14,8 +15,8 @@ export default function ForgotPage() {
     try {
       await api("/api/password/forgot", { method: "POST", body: JSON.stringify({ email }) });
       router.push(`/auth/reset-verify?email=${encodeURIComponent(email)}`);
-    } catch (e: any) {
-      alert(e.message);
+    } catch (e: unknown) {
+      alert(getErrMsg(e));
     } finally {
       setLoading(false);
     }
