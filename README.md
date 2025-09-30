@@ -1,36 +1,95 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+```md
+# Labfry Auth (Next.js + Socket.IO)
 
-## Getting Started
+Simple auth app matching Figma:
+- Register → Email OTP (6-digit)
+- Login (JWT in HttpOnly cookie)
+- Forgot/Reset Password (email link)
+- Role Select (Customer / Service Provider)
+- Profile with presence toggle (via external Socket.IO server)
 
-First, run the development server:
+## Project Layout
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Requirements
+- Node 18+ (recommended 20)
+- npm or pnpm
+- MongoDB (Atlas or local)
+- SMTP account (e.g., Gmail App Password)
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 1) Environment Variables
 
-## Learn More
+Create **`.env.local`** in the project root (Next.js):
+```
 
-To learn more about Next.js, take a look at the following resources:
+MONGODB_URI=mongodb+srv://<user>:<pass>@<cluster>/<db>?retryWrites=true&w=majority
+JWT_SECRET=supersecret_min_32_chars
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+SMTP_USER=[your@gmail.com](mailto:your@gmail.com)
+SMTP_PASS=your_gmail_app_password
+SMTP_FROM="Labfry [no-reply@labfry.com](mailto:no-reply@labfry.com)"
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+NEXT_PUBLIC_SITE_URL=[http://localhost:3000](http://localhost:3000)
+NEXT_PUBLIC_WS_URL=[http://localhost:5050](http://localhost:5050)
 
-## Deploy on Vercel
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Create **`ws-server/.env`**:
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+WS_PORT=5050
+CORS_ORIGIN=[http://localhost:3000](http://localhost:3000)
+JWT_SECRET=supersecret_min_32_chars   # must match Next.js
+
+````
+
+> **Important:** `JWT_SECRET` must be identical in both places.
+
+## 2) Install
+
+```bash
+# from project root
+pnpm i           # or: npm i
+# install ws-server deps
+cd ws-server && npm i && cd ..
+````
+
+## 3) Run (Local)
+
+```bash
+# Terminal 1: Next.js app (frontend + API routes)
+npm run dev
+# => http://localhost:3000
+
+# Terminal 2: Socket.IO server
+cd ws-server
+npm run dev
+# => http://localhost:5050
+```
+
+## 4) Use
+
+1. Visit `http://localhost:3000`.
+2. Register → check your email for the OTP → verify.
+3. Login → you’ll be redirected to **/profile**.
+4. Toggle presence on profile (emits socket events).
+   *Open two browsers to see realtime updates.*
+
+## 5) Deploy (Summary)
+
+* Deploy **Next.js** to Vercel (set env vars in dashboard).
+* Deploy **ws-server** to a Node host (Render/Railway/Heroku/Fly).
+  Set `CORS_ORIGIN` to your site URL and use `wss://` for `NEXT_PUBLIC_WS_URL`.
+
+## Troubleshooting
+
+* **CORS error**: `CORS_ORIGIN` must exactly match your site origin (protocol, host, port).
+* **JWT invalid**: Ensure both apps share the same `JWT_SECRET`.
+* **Emails not sending**: Use a Gmail **App Password** (not your normal password) or another SMTP provider.
+
+```
+```
