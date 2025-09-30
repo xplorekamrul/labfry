@@ -19,7 +19,7 @@ export async function POST(req: Request) {
   await OtpCode.create({
     userId: user._id,
     code,
-    purpose: "RESET",
+    purpose: "VERIFY",
     expiresAt: new Date(Date.now() + TEN_MIN),
   });
 

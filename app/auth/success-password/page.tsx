@@ -9,7 +9,7 @@ export default function SuccessPassword() {
         </div>
         <h2 className="text-2xl font-semibold">Password Changed Successfully!</h2>
         <p className="text-zinc-500 -mt-2">Your account is set up! Just verify your email to get started.</p>
-        <Link href="/auth/login"><BrandButton>Go To Login</BrandButton></Link>
+        <Link href="/auth/login"><BrandButton className="px-5">Go To Login</BrandButton></Link>
       </div>
     </AuthCard>
   );

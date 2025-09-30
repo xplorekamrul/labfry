@@ -11,17 +11,22 @@ export async function POST(req: Request) {
   const { email, code } = await req.json();
 
   const user = await User.findOne({ email });
-  if (!user) return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+  if (!user) {
+    return NextResponse.json({ error: "Invalid code" }, { status: 400 });
+  }
 
-  const otp = await OtpCode.findOne({ userId: user._id, purpose: "RESET" }).sort({ createdAt: -1 });
-  if (!otp || otp.code !== code || otp.expiresAt < new Date()) {
+  const otp = await OtpCode.findOne({
+    userId: user._id,
+    purpose: "VERIFY",
+    expiresAt: { $gt: new Date() }, 
+  }).sort({ createdAt: -1 });
+
+  if (!otp || String(otp.code) !== String(code)) {
     return NextResponse.json({ error: "Invalid or expired code" }, { status: 400 });
   }
 
-  // OTP consumed — remove all RESET OTPs for this user
-  await OtpCode.deleteMany({ userId: user._id, purpose: "RESET" });
+  await OtpCode.deleteMany({ userId: user._id, purpose: "VERIFY" });
 
-  // Create one-time reset token (30 minutes)
   const token = crypto.randomBytes(24).toString("hex");
   await ResetToken.create({
     userId: user._id,
