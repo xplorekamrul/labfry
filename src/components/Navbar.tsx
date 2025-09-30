@@ -1,25 +1,21 @@
+// components/NavBar.tsx
 import Link from "next/link";
 import Image from "next/image";
 import { cookies } from "next/headers";
 import jwt from "jsonwebtoken";
-import { unstable_noStore } from "next/cache";
 
+// Always render dynamically (no caching)
 export const dynamic = "force-dynamic";
 
-type JwtPayload = {
-  uid: string;
-  role: "ADMIN" | "CUSTOMER" | "PROVIDER";
-  email: string;
-  verified: boolean;
-};
+type JwtRole = "ADMIN" | "CUSTOMER" | "PROVIDER";
+type JwtPayload = { uid: string; role: JwtRole; email: string; verified: boolean };
 
 export default async function NavBar() {
-  unstable_noStore(); 
-
-  const cookieStore = await cookies();
+  const cookieStore = await cookies(); // Next 15+: cookies() can be async
   const token = cookieStore.get("accessToken")?.value;
+
   let hasToken = false;
-  let role: JwtPayload["role"] | null = null;
+  let role: JwtRole | null = null;
 
   if (token) {
     try {
@@ -27,7 +23,6 @@ export default async function NavBar() {
       hasToken = true;
       role = payload.role;
     } catch {
-      // invalid/expired token -> treat as logged out
       hasToken = false;
       role = null;
     }
@@ -50,7 +45,6 @@ export default async function NavBar() {
 
           {hasToken ? (
             <>
-              {/* Role badge */}
               {role && (
                 <span className="rounded-full border border-zinc-200 px-3 py-1 text-xs uppercase text-zinc-700">
                   {role}
@@ -61,14 +55,12 @@ export default async function NavBar() {
                 Profile
               </Link>
 
-              {/* Optional: Admin-only nav item */}
               {role === "ADMIN" && (
                 <Link href="/admin" className="text-zinc-700 hover:text-zinc-900">
                   Admin
                 </Link>
               )}
 
-              {/* POST logout */}
               <form action="/api/auth/logout" method="post">
                 <button
                   type="submit"
