@@ -1,4 +1,6 @@
+// app/auth/login/page.tsx
 "use client";
+
 import { useState } from "react";
 import AuthCard, { BrandButton, TextInput } from "@/components/AuthCard";
 import Link from "next/link";
@@ -7,13 +9,10 @@ import { useDispatch } from "react-redux";
 import { setUser, setWsToken } from "@/store/authSlice";
 import { useRouter } from "next/navigation";
 
-// Infer the payload type that setUser expects (e.g., User | null)
 type SetUserPayload = Parameters<typeof setUser>[0];
-
 type LoginForm = { email: string; password: string; remember: boolean };
 type LoginResp = { user: SetUserPayload; wsToken: string };
 
-// small helper to show readable errors without using `any`
 function getErrMsg(e: unknown): string {
   if (e instanceof Error) return e.message;
   if (e && typeof e === "object" && "message" in e) {
@@ -36,15 +35,20 @@ export default function LoginPage() {
   async function submit() {
     setLoading(true);
     try {
-      // If your `api` supports generics, you can do: await api<LoginResp>(...)
       const data = (await api("/api/auth/login", {
         method: "POST",
         body: JSON.stringify(form),
       })) as LoginResp;
 
+      // Store client state
       dispatch(setUser(data.user));
       dispatch(setWsToken(data.wsToken));
+
+      // Navigate anywhere you want (profile/home/etc.)
       router.push("/profile");
+
+      // 👇 Force refresh of the Server Components (NavBar reads cookies)
+      router.refresh();
     } catch (e: unknown) {
       alert(getErrMsg(e));
     } finally {

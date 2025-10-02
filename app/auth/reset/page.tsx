@@ -6,7 +6,6 @@ import AuthCard, { BrandButton, TextInput } from "@/components/AuthCard";
 import { api } from "@/lib-client/api";
 import { getErrMsg } from "@/lib/get-err-msg";
 
-// Avoid prerender/export errors for a URL-param dependent page
 export const dynamic = "force-dynamic";
 
 export default function ResetPage() {
@@ -14,7 +13,6 @@ export default function ResetPage() {
     <Suspense
       fallback={
         <AuthCard title="Loading…" subtitle="Preparing your reset form.">
-          {/* AuthCard requires children; simple skeleton/placeholder is fine */}
           <div className="space-y-3">
             <div className="h-10 rounded bg-zinc-200/70" />
             <div className="h-10 rounded bg-zinc-200/70" />
@@ -32,7 +30,6 @@ function ResetInner() {
   const params = useSearchParams();
   const router = useRouter();
 
-  // read once, memoize
   const token = useMemo(() => params.get("token") || "", [params]);
 
   const [form, set] = useState<{ pass: string; confirm: string }>({
